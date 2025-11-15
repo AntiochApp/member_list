@@ -1,760 +1,323 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>성도 등록</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>성도 등록</title>
 
-  <!-- 모바일 최적화 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    /* 전체 배경 및 기본 폰트 */
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background-color: #f5f5f5;
-    }
-
-    /* 가운데 카드 형태 컨테이너 */
-    .container {
-      max-width: 480px;          /* 모바일 기준, 너무 넓지 않게 */
-      margin: 20px auto;
-      padding: 20px 16px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-top: 0;
-      margin-bottom: 16px;
-      text-align: center;
-      color: #333;
-      cursor: pointer; /* 관리자용 숨은 버튼 느낌 */
-    }
-
-    h2 {
-      font-size: 1.1rem;
-      margin: 18px 0 10px;
-      color: #333;
-    }
-
-    .field {
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-      color: #444;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="date"],
-    input[type="password"],
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 0.95rem;
-    }
-
-    input:focus,
-    textarea:focus {
-      outline: none;
-      border-color: #4a90e2;
-      box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      background-color: #4a90e2;
-      color: #fff;
-      cursor: pointer;
-      margin-top: 6px;
-    }
-
-    button:active {
-      transform: scale(0.99);
-    }
-
-    .small-button {
-      background-color: #4a90e2;
-      font-size: 0.9rem;
-      width: auto;
-      padding: 6px 10px;
-      margin-top: 8px;
-    }
-
-    .result {
-      margin-top: 12px;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    .success {
-      color: #1b8c3f;
-    }
-
-    .error {
-      color: #d9534f;
-    }
-
-    .small {
-      font-size: 0.8rem;
-      color: #888;
-      margin-top: 6px;
-      text-align: center;
-    }
-
-    /* 가족 구성원 영역 스타일 */
-    .family-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .family-input {
-      flex: 1;
-    }
-
-    /* 관리자 비밀번호 영역 */
-    .admin-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-      margin-top: 4px;
-    }
-
-    .admin-row input[type="password"] {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 0.9rem;
-    }
-
-    .admin-row button {
-      width: auto;
-      padding: 8px 12px;
-      font-size: 0.9rem;
-    }
-
-    .admin-status {
-      font-size: 0.8rem;
-      color: #666;
-      min-height: 16px;
-    }
-
-    /* 검색 섹션 */
-    .search-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .search-row input[type="text"] {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 0.9rem;
-    }
-
-    .search-row button {
-      width: auto;
-      padding: 8px 12px;
-      font-size: 0.9rem;
-    }
-
-    .list-status {
-      font-size: 0.8rem;
-      color: #666;
-      margin-bottom: 8px;
-      min-height: 16px;
-    }
-
-    /* 테이블 스타일 (스크롤 가능) */
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-      min-width: 700px; /* 사진 컬럼 추가로 조금 넓게 */
-    }
-
-    thead {
-      background: #f0f0f0;
-    }
-
-    th, td {
-      padding: 6px;
-      border-bottom: 1px solid #e0e0e0;
-      text-align: left;
-      word-break: break-word;
-    }
-
-    tr:hover {
-      background: #fafafa;
-    }
-
-    /* 사진 업로드/촬영 영역 */
-    .photo-buttons {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-
-    .photo-buttons .small-button {
-      width: auto;
-    }
-
-    .photo-preview {
-      margin-top: 8px;
-      text-align: center;
-    }
-
-    .photo-preview img {
-      max-width: 100%;
-      max-height: 200px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      object-fit: contain;
-    }
-  </style>
+<style>
+body{margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f5;}
+.container{max-width:480px;margin:20px auto;padding:20px 16px;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+h1{text-align:center;margin:0 0 16px;font-size:1.4rem;color:#333;cursor:pointer;}
+.field{margin-bottom:14px;}
+label{display:block;font-size:.9rem;margin-bottom:4px;color:#444;}
+input,textarea{width:100%;padding:10px 12px;box-sizing:border-box;border:1px solid #ccc;border-radius:6px;font-size:.95rem;}
+input:focus{outline:none;border-color:#4a90e2;box-shadow:0 0 0 2px rgba(74,144,226,.2);}
+button{width:100%;padding:12px;font-size:1rem;border:none;border-radius:6px;background:#4a90e2;color:#fff;cursor:pointer;margin-top:6px;}
+button:active{transform:scale(.99);}
+.small-button{width:auto;font-size:.9rem;padding:6px 10px;margin-top:8px;}
+.result{margin-top:12px;font-size:.9rem;text-align:center;}
+.success{color:#1b8c3f;} .error{color:#d9534f;}
+.small{text-align:center;color:#888;font-size:.8rem;}
+.family-row{display:flex;gap:8px;margin-bottom:8px;}
+.family-input{flex:1;}
+.admin-row{display:flex;gap:8px;margin-bottom:8px;margin-top:4px;}
+.admin-row input{flex:1;padding:8px 10px;}
+.admin-row button{width:auto;padding:8px 12px;font-size:.9rem;}
+.search-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.search-row input{flex:1;padding:8px 10px;}
+.table-wrapper{width:100%;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:700px;}
+thead{background:#f0f0f0;} th,td{padding:6px;border-bottom:1px solid #e0e0e0;}
+.photo-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.photo-preview{text-align:center;margin-top:8px;}
+.photo-preview img{max-width:100%;max-height:200px;border-radius:6px;border:1px solid #ddd;object-fit:contain;}
+/* 전화번호 밀림 해결 */
+#phone{font-family:monospace;letter-spacing:.5px;}
+</style>
 </head>
 <body>
-  <div class="container">
-    <!-- 🔑 이 제목을 1초 안에 5번 클릭하면 관리자 비밀번호 영역이 나타남 -->
-    <h1 id="pageTitle">개인정보 입력</h1>
-
-    <!-- (1) 기존 성도 등록 폼 -->
-    <form id="infoForm">
-      <!-- header_row: 시트 헤더가 1행이면 그대로 1 -->
-      <input type="hidden" name="header_row" value="1">
-
-      <div class="field">
-        <label for="mokjang">목장/새가족</label>
-        <input 
-          type="text" 
-          id="mokjang" 
-          name="목장" 
-        >
-      </div>
-
-      <div class="field">
-        <label for="name">이름</label>
-        <input type="text" id="name" name="이름" required>
-      </div>
-
-      <div class="field">
-        <label for="phone">전화번호</label>
-        <input type="text" id="phone" name="전화번호">
-      </div>
-
-      <div class="field">
-        <label for="address">주소</label>
-        <input type="text" id="address" name="주소">
-      </div>
-
-      <div class="field">
-        <label for="email">이메일</label>
-        <input type="email" id="email" name="이메일">
-      </div>
-
-      <div class="field">
-        <label for="birth">생년월일</label>
-        <input type="date" id="birth" name="생년월일">
-      </div>
-
-      <!-- 🔹 사진 촬영 / 업로드 영역 -->
-      <div class="field">
-        <label>사진</label>
-
-        <div class="photo-buttons">
-          <button type="button" id="btnTakePhoto" class="small-button">📷 사진 촬영</button>
-          <button type="button" id="btnUploadPhoto" class="small-button">🖼 사진 업로드</button>
-        </div>
-
-        <!-- 실제 파일 입력 (숨김) -->
-        <input
-          type="file"
-          id="photoCamera"
-          accept="image/*"
-          capture="environment"
-          style="display:none;"
-        >
-        <input
-          type="file"
-          id="photoFile"
-          accept="image/*"
-          style="display:none;"
-        >
-
-        <!-- 미리보기 -->
-        <div class="photo-preview" id="photoPreviewWrap" style="display:none;">
-          <img id="photoPreview" alt="선택된 사진 미리보기">
-        </div>
-      </div>
-
-      <!-- 가족 구성원 영역 -->
-      <div class="field">
-        <label>가족 구성원</label>
-
-        <div id="familyList">
-          <div class="family-row">
-            <input type="text" name="가족이름[]" placeholder="이름" class="family-input">
-            <input type="text" name="가족관계[]" placeholder="관계(예: 어머니, 아버지, 아들)" class="family-input">
-          </div>
-        </div>
-
-        <button type="button" id="addFamily" class="small-button">+ 구성원 추가</button>
-      </div>
-
-      <button type="submit" id="submitBtn">제출하기</button>
-
-      <div id="result" class="result"></div>
-      <div class="small">모든 정보가 올바른지 다시 한번 확인해주세요.</div>
-      <div class="small">사진을 업로드하실 경우, 1-2분의 시간이 소요됩니다.</div>
-    </form>
-
-    <!-- 구분선 -->
-    <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-
-    <!-- (2) 관리자 비밀번호 영역 (처음에는 숨김) -->
-    <h2></h2>
-    <div class="field" id="adminSection" style="display:none;">
-      <label for="adminPassword">관리자 비밀번호를 입력하면 검색 기능이 활성화됩니다.</label>
-      <div class="admin-row">
-        <input type="password" id="adminPassword" placeholder="관리자 비밀번호">
-        <button type="button" id="adminLoginBtn">검색 활성화</button>
-      </div>
-      <div id="adminStatus" class="admin-status"></div>
-    </div>
-
-    <!-- (3) 검색 + 목록 영역 (처음에는 숨김) -->
-    <div id="searchArea" style="display:none;">
-      <!-- 이름 / 목장 검색 입력칸 -->
-      <div class="search-row">
-        <input type="text" id="searchName" placeholder="이름을 입력하세요 (예: 홍길동)" disabled>
-        <input type="text" id="searchMokjang" placeholder="목장을 입력하세요 (예: 101)" disabled>
-      </div>
-      <!-- 버튼들 -->
-      <div class="search-row">
-        <button type="button" id="searchBtn" disabled>검색</button>
-        <button type="button" id="refreshBtn" disabled>전체 새로고침</button>
-      </div>
-
-      <div id="listStatus" class="list-status">관리자 모드가 필요합니다.</div>
-
-      <div class="table-wrapper" id="tableWrapper" style="display:none;">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>목장</th>
-              <th>이름</th>
-              <th>전화번호</th>
-              <th>주소</th>
-              <th>이메일</th>
-              <th>생년월일</th>
-              <th>가족정보</th>
-              <th>사진</th>
-            </tr>
-          </thead>
-          <tbody id="data-body">
-            <!-- 검색 결과가 여기 들어갑니다 -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // 🔐 관리자 비밀번호
-    const ADMIN_PASSWORD = "Antioch19428";
-
-    // 🔗 Apps Script 웹앱 URL
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyN86SPJiewqgLf5RqrDd2OxdR4GDsX5IOzKi1vJEZ0ZDxDrd3mnVt5S7njOtPsRRBs7A/exec";
-
-    // 폼 요소
-    const form = document.getElementById('infoForm');
-    const resultEl = document.getElementById('result');
-    const submitBtn = document.getElementById('submitBtn');
-
-    // 가족 구성원 관련
-    const addFamilyBtn = document.getElementById('addFamily');
-    const familyList = document.getElementById('familyList');
-
-    // 관리자 관련
-    const pageTitle = document.getElementById('pageTitle');
-    const adminSection = document.getElementById('adminSection');
-    const adminPasswordInput = document.getElementById('adminPassword');
-    const adminLoginBtn = document.getElementById('adminLoginBtn');
-    const adminStatus = document.getElementById('adminStatus');
-
-    // 검색 관련
-    const searchArea = document.getElementById('searchArea');
-    const searchNameInput = document.getElementById('searchName');
-    const searchMokjangInput = document.getElementById('searchMokjang');
-    const searchBtn = document.getElementById('searchBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const listStatus = document.getElementById('listStatus');
-    const tableWrapper = document.getElementById('tableWrapper');
-    const tbody = document.getElementById('data-body');
-
-    // 사진 관련
-    const btnTakePhoto = document.getElementById('btnTakePhoto');
-    const btnUploadPhoto = document.getElementById('btnUploadPhoto');
-    const photoCamera = document.getElementById('photoCamera');
-    const photoFile = document.getElementById('photoFile');
-    const photoPreviewWrap = document.getElementById('photoPreviewWrap');
-    const photoPreview = document.getElementById('photoPreview');
-
-    // 상태
-    let allData = [];
-    let isAdmin = false;
-
-    // 사진 데이터 (Base64 + 메타정보)
-    let photoData = "";
-    let photoMimeType = "";
-    let photoFileName = "";
-
-    // 검색 영역 활성/비활성 함수
-    function setSearchEnabled(enabled) {
-      searchNameInput.disabled = !enabled;
-      searchMokjangInput.disabled = !enabled;
-      searchBtn.disabled = !enabled;
-      refreshBtn.disabled = !enabled;
-      tableWrapper.style.display = enabled ? "block" : "none";
-    }
-
-    // 제목 5번 클릭하면 관리자 비밀번호 영역 나타나기
-    let titleClickCount = 0;
-    let titleClickTimer = null;
-
-    pageTitle.addEventListener('click', () => {
-      titleClickCount++;
-
-      if (!titleClickTimer) {
-        titleClickTimer = setTimeout(() => {
-          titleClickCount = 0;
-          titleClickTimer = null;
-        }, 1000); // 1초 안에 5번 클릭
-      }
-
-      if (titleClickCount >= 5) {
-        adminSection.style.display = "block";
-        adminStatus.textContent = "관리자 비밀번호를 입력해 주세요.";
-        adminStatus.style.color = "#666";
-
-        clearTimeout(titleClickTimer);
-        titleClickTimer = null;
-        titleClickCount = 0;
-      }
-    });
-
-    // 관리자 비밀번호 확인
-    adminLoginBtn.addEventListener('click', () => {
-      const inputPw = adminPasswordInput.value.trim();
-      if (!inputPw) {
-        adminStatus.textContent = "비밀번호를 입력해 주세요.";
-        adminStatus.style.color = "#d9534f";
-        return;
-      }
-
-      if (inputPw === ADMIN_PASSWORD) {
-        isAdmin = true;
-        adminStatus.textContent = "관리자 모드가 활성화되었습니다.";
-        adminStatus.style.color = "#1b8c3f";
-
-        // 검색 영역 열기 + 활성화
-        searchArea.style.display = "block";
-        setSearchEnabled(true);
-        listStatus.textContent = "데이터를 불러오는 중입니다...";
-
-        // 비밀번호 입력 막기 (선택)
-        adminPasswordInput.disabled = true;
-        adminLoginBtn.disabled = true;
-
-        // 데이터 로드
-        loadData();
-      } else {
-        isAdmin = false;
-        adminStatus.textContent = "비밀번호가 올바르지 않습니다.";
-        adminStatus.style.color = "#d9534f";
-        setSearchEnabled(false);
-        searchArea.style.display = "none";
-        listStatus.textContent = "관리자 모드가 필요합니다.";
-      }
-    });
-
-    // "+ 구성원 추가" 눌렀을 때 새로운 입력칸 추가
-    addFamilyBtn.addEventListener('click', () => {
-      const row = document.createElement('div');
-      row.className = 'family-row';
-      row.innerHTML = `
-        <input type="text" name="가족이름[]" placeholder="이름" class="family-input">
-        <input type="text" name="가족관계[]" placeholder="관계(예: 어머니, 아버지, 아들)" class="family-input">
-      `;
-      familyList.appendChild(row);
-    });
-
-    // 사진 선택/촬영 공통 처리
-    function handlePhotoFile(file) {
-      if (!file) return;
-
-      photoMimeType = file.type || "image/jpeg";
-      photoFileName = file.name || ("photo_" + Date.now() + ".jpg");
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        photoData = e.target.result; // dataURL (data:image/...;base64,....)
-        photoPreview.src = photoData;
-        photoPreviewWrap.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    }
-
-    if (btnTakePhoto) {
-      btnTakePhoto.addEventListener('click', () => {
-        photoCamera.click();
-      });
-    }
-    if (btnUploadPhoto) {
-      btnUploadPhoto.addEventListener('click', () => {
-        photoFile.click();
-      });
-    }
-    if (photoCamera) {
-      photoCamera.addEventListener('change', () => {
-        const file = photoCamera.files && photoCamera.files[0];
-        handlePhotoFile(file);
-      });
-    }
-    if (photoFile) {
-      photoFile.addEventListener('change', () => {
-        const file = photoFile.files && photoFile.files[0];
-        handlePhotoFile(file);
-      });
-    }
-
-    // 폼 제출 (시트 + 사진 저장)
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = "전송 중...";
-
-      resultEl.textContent = "";
-      resultEl.className = "result";
-
-      try {
-        const formData = new FormData(form);
-
-        // 가족정보 문자열 만들기
-        const familyRows = familyList.querySelectorAll('.family-row');
-        const familyParts = [];
-
-        familyRows.forEach(row => {
-          const nameInput = row.querySelector('input[name="가족이름[]"]');
-          const relInput  = row.querySelector('input[name="가족관계[]"]');
-
-          const name = nameInput ? nameInput.value.trim() : "";
-          const rel  = relInput ? relInput.value.trim() : "";
-
-          if (!name && !rel) return;
-
-          if (name && rel) {
-            familyParts.push(`${name}(${rel})`);
-          } else if (name) {
-            familyParts.push(name);
-          } else {
-            familyParts.push(`(${rel})`);
-          }
-        });
-
-        const familyInfo = familyParts.join(", "); // 예: "홍길동(아들), 김영희(어머니)"
-
-        // 전송용 파라미터
-        const params = new URLSearchParams();
-        for (const [key, value] of formData.entries()) {
-          // 배열 필드는 직접 안 보내고 합쳐서 보냄
-          if (key === "가족이름[]" || key === "가족관계[]") continue;
-          params.append(key, value);
-        }
-        // 가족정보
-        params.append("가족정보", familyInfo);
-
-        // 사진 데이터 (있으면 추가)
-        if (photoData) {
-          params.append("photoData", photoData);
-          params.append("photoMimeType", photoMimeType || "");
-          params.append("photoFileName", photoFileName || "");
-        }
-
-        await fetch(WEB_APP_URL, {
-          method: "POST",
-          body: params,
-          mode: "no-cors" // CORS 오류를 피하기 위한 설정 (응답은 읽지 않음)
-        });
-
-        resultEl.textContent = "성공적으로 제출되었습니다!";
-        resultEl.classList.add("success");
-
-        form.reset();
-        familyList.innerHTML = `
-          <div class="family-row">
-            <input type="text" name="가족이름[]" placeholder="이름" class="family-input">
-            <input type="text" name="가족관계[]" placeholder="관계(예: 어머니, 아버지, 아들)" class="family-input">
-          </div>
-        `;
-
-        // 사진 상태 리셋
-        photoData = "";
-        photoMimeType = "";
-        photoFileName = "";
-        photoPreview.src = "";
-        photoPreviewWrap.style.display = "none";
-
-        if (isAdmin) {
-          loadData();
-        }
-      } catch (error) {
-        console.error(error);
-        resultEl.textContent = "전송 중 오류가 발생했습니다. 다시 시도해 주세요.";
-        resultEl.classList.add("error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "제출하기";
-      }
-    });
-
-    // 시트에서 전체 데이터 가져오기
-    async function loadData() {
-      if (!isAdmin) {
-        listStatus.textContent = "관리자 모드가 필요합니다.";
-        return;
-      }
-
-      listStatus.textContent = "시트에서 데이터를 불러오는 중입니다...";
-      tbody.innerHTML = "";
-
-      try {
-        const res = await fetch(WEB_APP_URL);
-        const data = await res.json();
-
-        allData = Array.isArray(data) ? data : [];
-        listStatus.textContent = `총 ${allData.length}명 불러왔습니다. 이름 또는 목장으로 검색해 보세요.`;
-        renderTable(allData);
-      } catch (error) {
-        console.error(error);
-        listStatus.textContent = "데이터 불러오기 중 오류가 발생했습니다.";
-      }
-    }
-
-    // 테이블 렌더링
-    function renderTable(rows) {
-      tbody.innerHTML = "";
-
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9">표시할 데이터가 없습니다.</td></tr>';
-        return;
-      }
-
-      rows.forEach((row, index) => {
-        const familyInfo = row["가족정보"] || "";
-        const photoUrl = row["사진URL"] || row["사진"] || "";
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${row["목장"] || ""}</td>
-          <td>${row["이름"] || ""}</td>
-          <td>${row["전화번호"] || ""}</td>
-          <td>${row["주소"] || ""}</td>
-          <td>${row["이메일"] || ""}</td>
-          <td>${row["생년월일"] || ""}</td>
-          <td>${familyInfo}</td>
-          <td>${photoUrl ? `<a href="${photoUrl}" target="_blank">보기</a>` : ""}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // 이름/목장으로 필터링
-    function filterList() {
-      if (!isAdmin) {
-        listStatus.textContent = "관리자만 검색할 수 있습니다.";
-        return;
-      }
-
-      const nameKeyword = searchNameInput.value.trim().toLowerCase();
-      const mokjangKeyword = searchMokjangInput.value.trim().toLowerCase();
-
-      if (!nameKeyword && !mokjangKeyword) {
-        listStatus.textContent = "검색어가 없습니다. 전체 목록을 보여줍니다.";
-        renderTable(allData);
-        return;
-      }
-
-      const filtered = allData.filter(row => {
-        const name = (row["이름"] || "").toString().toLowerCase();
-        const mokjang = (row["목장"] || "").toString().toLowerCase();
-
-        // 둘 다 입력된 경우: AND 검색
-        if (nameKeyword && mokjangKeyword) {
-          return name.includes(nameKeyword) && mokjang.includes(mokjangKeyword);
-        }
-        // 이름만 입력된 경우
-        if (nameKeyword) {
-          return name.includes(nameKeyword);
-        }
-        // 목장만 입력된 경우
-        if (mokjangKeyword) {
-          return mokjang.includes(mokjangKeyword);
-        }
-        return false;
-      });
-
-      let statusText = `검색 결과: ${filtered.length}명`;
-      if (nameKeyword) statusText += ` (이름: "${nameKeyword}")`;
-      if (mokjangKeyword) statusText += ` (목장: "${mokjangKeyword}")`;
-      listStatus.textContent = statusText;
-
-      renderTable(filtered);
-    }
-
-    // 검색 버튼 & 엔터 연동
-    searchBtn.addEventListener('click', filterList);
-    refreshBtn.addEventListener('click', loadData);
-    searchNameInput.addEventListener('keyup', (e) => {
-      if (e.key === "Enter") filterList();
-    });
-    searchMokjangInput.addEventListener('keyup', (e) => {
-      if (e.key === "Enter") filterList();
-    });
-
-    // 초기 상태
-    window.addEventListener('DOMContentLoaded', () => {
-      setSearchEnabled(false);
-      searchArea.style.display = "none";
-      adminSection.style.display = "none";
-      tableWrapper.style.display = "none";
-      listStatus.textContent = "관리자 모드가 필요합니다.";
-    });
-  </script>
+<div class="container">
+
+<h1 id="pageTitle">개인정보 입력</h1>
+
+<form id="infoForm">
+<input type="hidden" name="header_row" value="1">
+
+<div class="field">
+<label>목장/새가족</label>
+<input type="text" id="mokjang" name="목장">
+</div>
+
+<div class="field">
+<label>이름</label>
+<input type="text" id="name" name="이름" required>
+</div>
+
+<div class="field">
+<label>전화번호</label>
+<input type="text" id="phone" name="전화번호" placeholder="010-1234-5678" maxlength="13">
+</div>
+
+<div class="field">
+<label>주소</label>
+<input type="text" id="address" name="주소">
+</div>
+
+<div class="field">
+<label>이메일</label>
+<input type="email" id="email" name="이메일">
+</div>
+
+<div class="field">
+<label>생년월일</label>
+<input type="date" id="birth" name="생년월일">
+</div>
+
+<div class="field">
+<label>사진</label>
+<div class="photo-buttons">
+<button type="button" id="btnTakePhoto" class="small-button">📷 사진 촬영</button>
+<button type="button" id="btnUploadPhoto" class="small-button">🖼 사진 업로드</button>
+</div>
+<input type="file" id="photoCamera" accept="image/*" capture="environment" style="display:none;">
+<input type="file" id="photoFile" accept="image/*" style="display:none;">
+<div id="photoPreviewWrap" class="photo-preview" style="display:none;">
+<img id="photoPreview">
+</div>
+</div>
+
+<div class="field">
+<label>가족 구성원</label>
+<div id="familyList">
+<div class="family-row">
+<input type="text" name="가족이름[]" class="family-input" placeholder="이름">
+<input type="text" name="가족관계[]" class="family-input" placeholder="관계">
+</div>
+</div>
+<button type="button" id="addFamily" class="small-button">+ 구성원 추가</button>
+</div>
+
+<button id="submitBtn">제출하기</button>
+<div id="result" class="result"></div>
+<div class="small">모든 정보를 확인해주세요.</div>
+<div class="small">사진 업로드 시 1-2분 소요될 수 있습니다.</div>
+</form>
+
+<hr>
+
+<!-- 관리자 -->
+<div id="adminSection" style="display:none;">
+<label>관리자 비밀번호 입력</label>
+<div class="admin-row">
+<input type="password" id="adminPassword" placeholder="비밀번호">
+<button id="adminLoginBtn">검색 활성화</button>
+</div>
+<div id="adminStatus" class="admin-status"></div>
+</div>
+
+<div id="searchArea" style="display:none;">
+<div class="search-row">
+<input type="text" id="searchName" placeholder="이름" disabled>
+<input type="text" id="searchMokjang" placeholder="목장" disabled>
+</div>
+<div class="search-row">
+<button id="searchBtn" disabled>검색</button>
+<button id="refreshBtn" disabled>전체 새로고침</button>
+</div>
+
+<div id="listStatus" class="list-status">관리자 모드가 필요합니다.</div>
+
+<div id="tableWrapper" class="table-wrapper" style="display:none;">
+<table>
+<thead>
+<tr>
+<th>#</th><th>목장</th><th>이름</th><th>전화</th><th>주소</th><th>이메일</th><th>생일</th><th>가족</th><th>사진</th>
+</tr>
+</thead>
+<tbody id="data-body"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<script>
+// 관리자 PW
+const ADMIN_PASSWORD="Antioch19428";
+const WEB_APP_URL="https://script.google.com/macros/s/AKfycbyN86SPJiewqgLf5RqrDd2OxdR4GDsX5IOzKi1vJEZ0ZDxDrd3mnVt5S7njOtPsRRBs7A/exec";
+
+let isAdmin=false, allData=[];
+let photoData="", photoMimeType="", photoFileName="";
+
+const form=document.getElementById("infoForm"),
+resultEl=document.getElementById("result"),
+submitBtn=document.getElementById("submitBtn"),
+familyList=document.getElementById("familyList"),
+addFamily=document.getElementById("addFamily");
+
+// ---------------- 전화번호 자동 하이픈 ----------------
+document.getElementById("phone").addEventListener("input",e=>{
+let v=e.target.value.replace(/[^0-9]/g,"");
+if(v.length<4)e.target.value=v;
+else if(v.length<7)e.target.value=v.slice(0,3)+"-"+v.slice(3);
+else e.target.value=v.slice(0,3)+"-"+v.slice(3,7)+"-"+v.slice(7,11);
+});
+
+// ---------------- 날짜 포맷 ----------------
+function formatDate(v){
+if(!v) return "";
+let d=new Date(v);
+if(isNaN(d.getTime())) return v;
+let y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dd=String(d.getDate()).padStart(2,"0");
+return `${y}-${m}-${dd}`;
+}
+
+// ---------------- 제목 5번 클릭 → 관리자 ----------------
+let clk=0,timer=null;
+document.getElementById("pageTitle").onclick=()=>{
+clk++;
+if(!timer) timer=setTimeout(()=>{clk=0;timer=null},1000);
+if(clk>=5){
+document.getElementById("adminSection").style.display="block";
+document.getElementById("adminStatus").textContent="관리자 비밀번호를 입력하세요.";
+clk=0;clearTimeout(timer);timer=null;
+}
+};
+
+// ---------------- 관리자 로그인 ----------------
+document.getElementById("adminLoginBtn").onclick=()=>{
+let pw=document.getElementById("adminPassword").value.trim();
+if(pw!==ADMIN_PASSWORD){
+document.getElementById("adminStatus").textContent="비밀번호 오류";
+return;
+}
+isAdmin=true;
+document.getElementById("adminStatus").textContent="관리자 모드 ON";
+document.getElementById("searchArea").style.display="block";
+enableSearch(true);
+loadData();
+};
+
+// ---------------- 검색창 활성/비활성 ----------------
+function enableSearch(b){
+document.getElementById("searchName").disabled=!b;
+document.getElementById("searchMokjang").disabled=!b;
+document.getElementById("searchBtn").disabled=!b;
+document.getElementById("refreshBtn").disabled=!b;
+document.getElementById("tableWrapper").style.display=b?"block":"none";
+}
+
+// ---------------- 가족 추가 ----------------
+addFamily.onclick=()=>{
+let r=document.createElement("div");
+r.className="family-row";
+r.innerHTML=`<input name="가족이름[]" class="family-input" placeholder="이름">
+<input name="가족관계[]" class="family-input" placeholder="관계">`;
+familyList.appendChild(r);
+};
+
+// ---------------- 사진 ----------------
+function handlePhotoFile(f){
+if(!f)return;
+photoMimeType=f.type;photoFileName=f.name;
+const reader=new FileReader();
+reader.onload=e=>{
+photoData=e.target.result;
+document.getElementById("photoPreview").src=photoData;
+document.getElementById("photoPreviewWrap").style.display="block";
+};
+reader.readAsDataURL(f);
+}
+document.getElementById("btnTakePhoto").onclick=()=>document.getElementById("photoCamera").click();
+document.getElementById("btnUploadPhoto").onclick=()=>document.getElementById("photoFile").click();
+document.getElementById("photoCamera").onchange=e=>handlePhotoFile(e.target.files[0]);
+document.getElementById("photoFile").onchange=e=>handlePhotoFile(e.target.files[0]);
+
+// ---------------- 제출 ----------------
+form.onsubmit=async e=>{
+e.preventDefault();
+submitBtn.disabled=true;submitBtn.textContent="전송 중...";
+resultEl.textContent="";
+
+let fd=new FormData(form), famRows=document.querySelectorAll(".family-row");
+let fam=[];
+famRows.forEach(r=>{
+let n=r.querySelector('input[name="가족이름[]"]').value.trim();
+let rel=r.querySelector('input[name="가족관계[]"]').value.trim();
+if(n&&rel) fam.push(`${n}(${rel})`);
+});
+const params=new URLSearchParams();
+for(let [k,v] of fd.entries()){
+if(k!=="가족이름[]"&&k!=="가족관계[]") params.append(k,v);
+}
+params.append("가족정보",fam.join(", "));
+if(photoData){
+params.append("photoData",photoData);
+params.append("photoMimeType",photoMimeType);
+params.append("photoFileName",photoFileName);
+}
+
+await fetch(WEB_APP_URL,{method:"POST",body:params,mode:"no-cors"});
+resultEl.textContent="제출 완료!";resultEl.classList.add("success");
+form.reset();photoData="";document.getElementById("photoPreviewWrap").style.display="none";
+submitBtn.disabled=false;submitBtn.textContent="제출하기";
+if(isAdmin)loadData();
+};
+
+// ---------------- 시트 데이터 로드 ----------------
+async function loadData(){
+document.getElementById("listStatus").textContent="불러오는 중...";
+try{
+let r=await fetch(WEB_APP_URL);
+let d=await r.json();
+allData=d; renderTable(d);
+document.getElementById("listStatus").textContent=`총 ${d.length}명`;
+}catch(e){
+document.getElementById("listStatus").textContent="오류 발생";
+}
+}
+
+// ---------------- 테이블 렌더링 ----------------
+function renderTable(rows){
+let tb=document.getElementById("data-body");
+tb.innerHTML="";
+rows.forEach((r,i)=>{
+let tr=document.createElement("tr");
+let photo=r["사진URL"]?`<a href="${r["사진URL"]}" target="_blank">보기</a>`:"";
+tr.innerHTML=`
+<td>${i+1}</td>
+<td>${r["목장"]||""}</td>
+<td>${r["이름"]||""}</td>
+<td>${r["전화번호"]||""}</td>
+<td>${r["주소"]||""}</td>
+<td>${r["이메일"]||""}</td>
+<td>${formatDate(r["생년월일"])}</td>
+<td>${r["가족정보"]||""}</td>
+<td>${photo}</td>`;
+tb.appendChild(tr);
+});
+}
+
+// ---------------- 검색 기능 ----------------
+document.getElementById("searchBtn").onclick=()=>filter();
+document.getElementById("refreshBtn").onclick=()=>loadData();
+
+function filter(){
+let n=document.getElementById("searchName").value.toLowerCase();
+let m=document.getElementById("searchMokjang").value.toLowerCase();
+let f=allData.filter(r=>{
+let name=(r["이름"]||"").toLowerCase();
+let mk=(r["목장"]||"").toLowerCase();
+return (!n||name.includes(n)) && (!m||mk.includes(m));
+});
+renderTable(f);
+document.getElementById("listStatus").textContent=`검색 결과 ${f.length}명`;
+}
+
+// 초기
+enableSearch(false);
+</script>
+
 </body>
 </html>
