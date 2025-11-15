@@ -159,6 +159,7 @@
       display: flex;
       gap: 8px;
       margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
     .search-row input[type="text"] {
@@ -245,7 +246,7 @@
       <input type="hidden" name="header_row" value="1">
 
       <div class="field">
-        <label for="mokjang">목장</label>
+        <label for="mokjang">목장/새가족</label>
         <input 
           type="text" 
           id="mokjang" 
@@ -345,8 +346,13 @@
 
     <!-- (3) 검색 + 목록 영역 (처음에는 숨김) -->
     <div id="searchArea" style="display:none;">
+      <!-- 이름 / 목장 검색 입력칸 -->
       <div class="search-row">
-        <input type="text" id="searchName" placeholder="이름을 입력하세요 (예: 길동)" disabled>
+        <input type="text" id="searchName" placeholder="이름을 입력하세요 (예: 홍길동)" disabled>
+        <input type="text" id="searchMokjang" placeholder="목장을 입력하세요 (예: 101)" disabled>
+      </div>
+      <!-- 버튼들 -->
+      <div class="search-row">
         <button type="button" id="searchBtn" disabled>검색</button>
         <button type="button" id="refreshBtn" disabled>전체 새로고침</button>
       </div>
@@ -402,6 +408,7 @@
     // 검색 관련
     const searchArea = document.getElementById('searchArea');
     const searchNameInput = document.getElementById('searchName');
+    const searchMokjangInput = document.getElementById('searchMokjang');
     const searchBtn = document.getElementById('searchBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const listStatus = document.getElementById('listStatus');
@@ -428,6 +435,7 @@
     // 검색 영역 활성/비활성 함수
     function setSearchEnabled(enabled) {
       searchNameInput.disabled = !enabled;
+      searchMokjangInput.disabled = !enabled;
       searchBtn.disabled = !enabled;
       refreshBtn.disabled = !enabled;
       tableWrapper.style.display = enabled ? "block" : "none";
@@ -649,7 +657,7 @@
         const data = await res.json();
 
         allData = Array.isArray(data) ? data : [];
-        listStatus.textContent = `총 ${allData.length}명 불러왔습니다. 이름으로 검색해 보세요.`;
+        listStatus.textContent = `총 ${allData.length}명 불러왔습니다. 이름 또는 목장으로 검색해 보세요.`;
         renderTable(allData);
       } catch (error) {
         console.error(error);
@@ -686,36 +694,57 @@
       });
     }
 
-    // 이름으로 필터링
-    function filterByName() {
+    // 이름/목장으로 필터링
+    function filterList() {
       if (!isAdmin) {
         listStatus.textContent = "관리자만 검색할 수 있습니다.";
         return;
       }
 
-      const keyword = searchNameInput.value.trim();
-      if (!keyword) {
+      const nameKeyword = searchNameInput.value.trim().toLowerCase();
+      const mokjangKeyword = searchMokjangInput.value.trim().toLowerCase();
+
+      if (!nameKeyword && !mokjangKeyword) {
         listStatus.textContent = "검색어가 없습니다. 전체 목록을 보여줍니다.";
         renderTable(allData);
         return;
       }
 
-      const lower = keyword.toLowerCase();
-
       const filtered = allData.filter(row => {
         const name = (row["이름"] || "").toString().toLowerCase();
-        return name.includes(lower);
+        const mokjang = (row["목장"] || "").toString().toLowerCase();
+
+        // 둘 다 입력된 경우: AND 검색
+        if (nameKeyword && mokjangKeyword) {
+          return name.includes(nameKeyword) && mokjang.includes(mokjangKeyword);
+        }
+        // 이름만 입력된 경우
+        if (nameKeyword) {
+          return name.includes(nameKeyword);
+        }
+        // 목장만 입력된 경우
+        if (mokjangKeyword) {
+          return mokjang.includes(mokjangKeyword);
+        }
+        return false;
       });
 
-      listStatus.textContent = `"${keyword}" 검색 결과: ${filtered.length}명`;
+      let statusText = `검색 결과: ${filtered.length}명`;
+      if (nameKeyword) statusText += ` (이름: "${nameKeyword}")`;
+      if (mokjangKeyword) statusText += ` (목장: "${mokjangKeyword}")`;
+      listStatus.textContent = statusText;
+
       renderTable(filtered);
     }
 
     // 검색 버튼 & 엔터 연동
-    searchBtn.addEventListener('click', filterByName);
+    searchBtn.addEventListener('click', filterList);
     refreshBtn.addEventListener('click', loadData);
     searchNameInput.addEventListener('keyup', (e) => {
-      if (e.key === "Enter") filterByName();
+      if (e.key === "Enter") filterList();
+    });
+    searchMokjangInput.addEventListener('keyup', (e) => {
+      if (e.key === "Enter") filterList();
     });
 
     // 초기 상태
