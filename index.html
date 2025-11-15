@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>성도 등록 & 검색</title>
+  <title>성도 등록</title>
 
   <!-- 모바일 최적화 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -190,7 +190,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 0.8rem;
-      min-width: 600px; /* 컬럼이 많아서 최소 너비 확보 */
+      min-width: 700px; /* 사진 컬럼 추가로 조금 넓게 */
     }
 
     thead {
@@ -207,12 +207,37 @@
     tr:hover {
       background: #fafafa;
     }
+
+    /* 사진 업로드/촬영 영역 */
+    .photo-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .photo-buttons .small-button {
+      width: auto;
+    }
+
+    .photo-preview {
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .photo-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- 🔑 이 제목을 1초 안에 5번 클릭하면 관리자 비밀번호 영역이 나타남 -->
-    <h1 id="pageTitle">개인정보 입력 & 검색</h1>
+    <h1 id="pageTitle">개인정보 입력</h1>
 
     <!-- (1) 기존 성도 등록 폼 -->
     <form id="infoForm">
@@ -221,7 +246,11 @@
 
       <div class="field">
         <label for="mokjang">목장</label>
-        <input type="text" id="mokjang" name="목장" required>
+        <input 
+          type="text" 
+          id="mokjang" 
+          name="목장" 
+        >
       </div>
 
       <div class="field">
@@ -249,6 +278,36 @@
         <input type="date" id="birth" name="생년월일">
       </div>
 
+      <!-- 🔹 사진 촬영 / 업로드 영역 -->
+      <div class="field">
+        <label>사진</label>
+
+        <div class="photo-buttons">
+          <button type="button" id="btnTakePhoto" class="small-button">📷 사진 촬영</button>
+          <button type="button" id="btnUploadPhoto" class="small-button">🖼 사진 업로드</button>
+        </div>
+
+        <!-- 실제 파일 입력 (숨김) -->
+        <input
+          type="file"
+          id="photoCamera"
+          accept="image/*"
+          capture="environment"
+          style="display:none;"
+        >
+        <input
+          type="file"
+          id="photoFile"
+          accept="image/*"
+          style="display:none;"
+        >
+
+        <!-- 미리보기 -->
+        <div class="photo-preview" id="photoPreviewWrap" style="display:none;">
+          <img id="photoPreview" alt="선택된 사진 미리보기">
+        </div>
+      </div>
+
       <!-- 가족 구성원 영역 -->
       <div class="field">
         <label>가족 구성원</label>
@@ -267,6 +326,7 @@
 
       <div id="result" class="result"></div>
       <div class="small">모든 정보가 올바른지 다시 한번 확인해주세요.</div>
+      <div class="small">사진을 업로드하실 경우, 1-2분의 시간이 소요됩니다.</div>
     </form>
 
     <!-- 구분선 -->
@@ -305,6 +365,7 @@
               <th>이메일</th>
               <th>생년월일</th>
               <th>가족정보</th>
+              <th>사진</th>
             </tr>
           </thead>
           <tbody id="data-body">
@@ -319,8 +380,8 @@
     // 🔐 관리자 비밀번호
     const ADMIN_PASSWORD = "Antioch19428";
 
-    // 🔗 Apps Script 웹앱 URL (이미 사용 중인 URL)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXbl5hTv4cXo85HrUliS0_7b-T9SkCclqcUCh6s8oEbOHU-lzWOR1J8dfwJPHZlK6TGQ/exec";
+    // 🔗 Apps Script 웹앱 URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyN86SPJiewqgLf5RqrDd2OxdR4GDsX5IOzKi1vJEZ0ZDxDrd3mnVt5S7njOtPsRRBs7A/exec";
 
     // 폼 요소
     const form = document.getElementById('infoForm');
@@ -347,9 +408,22 @@
     const tableWrapper = document.getElementById('tableWrapper');
     const tbody = document.getElementById('data-body');
 
+    // 사진 관련
+    const btnTakePhoto = document.getElementById('btnTakePhoto');
+    const btnUploadPhoto = document.getElementById('btnUploadPhoto');
+    const photoCamera = document.getElementById('photoCamera');
+    const photoFile = document.getElementById('photoFile');
+    const photoPreviewWrap = document.getElementById('photoPreviewWrap');
+    const photoPreview = document.getElementById('photoPreview');
+
     // 상태
     let allData = [];
     let isAdmin = false;
+
+    // 사진 데이터 (Base64 + 메타정보)
+    let photoData = "";
+    let photoMimeType = "";
+    let photoFileName = "";
 
     // 검색 영역 활성/비활성 함수
     function setSearchEnabled(enabled) {
@@ -430,7 +504,46 @@
       familyList.appendChild(row);
     });
 
-    // 폼 제출 (시트에 저장)
+    // 사진 선택/촬영 공통 처리
+    function handlePhotoFile(file) {
+      if (!file) return;
+
+      photoMimeType = file.type || "image/jpeg";
+      photoFileName = file.name || ("photo_" + Date.now() + ".jpg");
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        photoData = e.target.result; // dataURL (data:image/...;base64,....)
+        photoPreview.src = photoData;
+        photoPreviewWrap.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (btnTakePhoto) {
+      btnTakePhoto.addEventListener('click', () => {
+        photoCamera.click();
+      });
+    }
+    if (btnUploadPhoto) {
+      btnUploadPhoto.addEventListener('click', () => {
+        photoFile.click();
+      });
+    }
+    if (photoCamera) {
+      photoCamera.addEventListener('change', () => {
+        const file = photoCamera.files && photoCamera.files[0];
+        handlePhotoFile(file);
+      });
+    }
+    if (photoFile) {
+      photoFile.addEventListener('change', () => {
+        const file = photoFile.files && photoFile.files[0];
+        handlePhotoFile(file);
+      });
+    }
+
+    // 폼 제출 (시트 + 사진 저장)
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -474,12 +587,20 @@
           if (key === "가족이름[]" || key === "가족관계[]") continue;
           params.append(key, value);
         }
+        // 가족정보
         params.append("가족정보", familyInfo);
+
+        // 사진 데이터 (있으면 추가)
+        if (photoData) {
+          params.append("photoData", photoData);
+          params.append("photoMimeType", photoMimeType || "");
+          params.append("photoFileName", photoFileName || "");
+        }
 
         await fetch(WEB_APP_URL, {
           method: "POST",
           body: params,
-          mode: "no-cors"
+          mode: "no-cors" // CORS 오류를 피하기 위한 설정 (응답은 읽지 않음)
         });
 
         resultEl.textContent = "성공적으로 제출되었습니다!";
@@ -492,6 +613,13 @@
             <input type="text" name="가족관계[]" placeholder="관계(예: 어머니, 아버지, 아들)" class="family-input">
           </div>
         `;
+
+        // 사진 상태 리셋
+        photoData = "";
+        photoMimeType = "";
+        photoFileName = "";
+        photoPreview.src = "";
+        photoPreviewWrap.style.display = "none";
 
         if (isAdmin) {
           loadData();
@@ -534,12 +662,13 @@
       tbody.innerHTML = "";
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8">표시할 데이터가 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9">표시할 데이터가 없습니다.</td></tr>';
         return;
       }
 
       rows.forEach((row, index) => {
         const familyInfo = row["가족정보"] || "";
+        const photoUrl = row["사진URL"] || row["사진"] || "";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -551,6 +680,7 @@
           <td>${row["이메일"] || ""}</td>
           <td>${row["생년월일"] || ""}</td>
           <td>${familyInfo}</td>
+          <td>${photoUrl ? `<a href="${photoUrl}" target="_blank">보기</a>` : ""}</td>
         `;
         tbody.appendChild(tr);
       });
