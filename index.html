@@ -56,7 +56,7 @@ thead{background:#f0f0f0;} th,td{padding:6px;border-bottom:1px solid #e0e0e0;}
 
 <div class="field">
 <label>전화번호</label>
-<input type="text" id="phone" name="전화번호" placeholder="010-1234-5678" maxlength="13">
+<input type="text" id="phone" name="전화번호" placeholder="010-123-4567" maxlength="13">
 </div>
 
 <div class="field">
@@ -172,17 +172,20 @@ document.getElementById("phone").addEventListener("input", e => {
 });
 
 // ---------------- 생년월일 자동 하이픈 (yyyy-mm-dd) ----------------
-document.getElementById("birth").addEventListener("input", e => {
+const birthInput = document.getElementById("birth");
+
+birthInput.addEventListener("input", (e) => {
   let v = e.target.value.replace(/[^0-9]/g, "");
 
   if (v.length <= 4) {
-    e.target.value = v; // yyyy
+    e.target.value = v;  // yyyy
   }
   else if (v.length <= 6) {
-    e.target.value = v.slice(0,4) + "-" + v.slice(4); // yyyy-mm
+    e.target.value = v.slice(0, 4) + "-" + v.slice(4); // yyyy-mm
   }
   else {
-    e.target.value = v.slice(0,4) + "-" + v.slice(4,6) + "-" + v.slice(6,8); // yyyy-mm-dd
+    e.target.value =
+      v.slice(0, 4) + "-" + v.slice(4, 6) + "-" + v.slice(6, 8); // yyyy-mm-dd
   }
 });
   
@@ -343,5 +346,6 @@ enableSearch(false);
 
 </body>
 </html>
+
 
 
